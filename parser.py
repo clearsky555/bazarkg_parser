@@ -5,6 +5,15 @@ from multiprocessing import Pool
 import csv
 
 from config import CSV_FILE_NAME
+from db import BazarManager, engine
+
+
+manager = BazarManager(engine=engine)
+
+
+def write_data_in_db(data): # Запись в базу
+    result = manager.insert_product(data)
+    return result
 
 
 def get_html(URL): # делать запрос по ссылке и возвращать html код этой страницы
@@ -82,6 +91,8 @@ def get_parse_page(page):
         post_html = get_html(link)
         post_data = get_detail_post(post_html, post_url=link)
         write_data(data=post_data)
+        if not manager.check_product_in_db(link):
+            write_data_in_db(data=post_data)
 
 
 def main():
@@ -100,5 +111,6 @@ def main():
 
 
 if __name__ == '__main__':
+    manager.create_table()
     main()
 
